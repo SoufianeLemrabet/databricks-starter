@@ -8,8 +8,6 @@ authors = [
 readme = "README.md"
 requires-python = ">=3.10"
 dependencies = [
-    "ruff (>=0.16.8,<0.17.0)",
-    "pytest (>=9.1.1,<10.0.0)"
 ]
 
 
@@ -20,3 +18,10 @@ package-mode = false
 [build-system]
 requires = ["poetry-core>=2.0.0,<3.0.0"]
 build-backend = "poetry.core.masonry.api"
+
+[dependency-groups]
+dev = [
+    "pytest (>=9.1.1,<10.0.0)",
+    "ruff (>=0.16.8,<0.17.0)",
+    "pytest-cov (>=7.1.0,<8.0.0)"
+]
