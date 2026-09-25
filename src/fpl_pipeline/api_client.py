@@ -8,7 +8,6 @@ class FPLAPIError(Exception):
     """Erreur levée lors d'un appel à l'API FPL."""
 
 
-
 class FPLClient:
     """Client pour l'API publique Fantasy Premier League."""
 
