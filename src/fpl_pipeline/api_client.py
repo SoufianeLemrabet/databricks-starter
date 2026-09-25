@@ -1,12 +1,12 @@
-import requests
 from typing import Any
+
+import requests
 from tenacity import retry, stop_after_attempt, wait_exponential
 
 
 class FPLAPIError(Exception):
     """Erreur levée lors d'un appel à l'API FPL."""
 
-    pass
 
 
 class FPLClient:
@@ -41,7 +41,7 @@ class FPLClient:
         try:
             response = self.session.get(url, timeout=self.timeout)
             response.raise_for_status()
-        except requests.exceptions.RequestException as e:  # noqa: TRY203
+        except requests.exceptions.RequestException:  # noqa: TRY203
             raise
         try:
             return response.json()

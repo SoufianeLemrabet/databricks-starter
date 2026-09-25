@@ -1,9 +1,8 @@
-import json
-import requests
 import pytest
+import requests
 import requests_mock
 
-from fpl_pipeline.api_client import FPLClient, FPLAPIError
+from fpl_pipeline.api_client import FPLAPIError, FPLClient
 
 BASE_URL = "https://fantasy.premierleague.com/api"
 
@@ -87,7 +86,7 @@ def test_get_bootstrap_succeeds_after_transient_failures(client):
 def test_get_bootstrap_raises_on_404(client):
     with requests_mock.Mocker() as m:
         m.get(f"{BASE_URL}/bootstrap-static/", status_code=404)
-        with pytest.raises(Exception):
+        with pytest.raises(requests.exceptions.HTTPError):
             client.get_bootstrap()
 
 
@@ -111,6 +110,6 @@ def test_get_bootstrap_raises_fplapierror_on_invalid_json(client):
 def test_get_bootstrap_raises_on_timeout(client):
     with requests_mock.Mocker() as m:
         m.get(f"{BASE_URL}/bootstrap-static/", exc=requests.exceptions.ConnectTimeout)
-        with pytest.raises(Exception):
+        with pytest.raises(requests.exceptions.HTTPError):
             client.get_bootstrap()
     assert m.call_count == 3
