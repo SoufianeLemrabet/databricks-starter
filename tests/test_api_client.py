@@ -110,6 +110,6 @@ def test_get_bootstrap_raises_fplapierror_on_invalid_json(client):
 def test_get_bootstrap_raises_on_timeout(client):
     with requests_mock.Mocker() as m:
         m.get(f"{BASE_URL}/bootstrap-static/", exc=requests.exceptions.ConnectTimeout)
-        with pytest.raises(requests.exceptions.HTTPError):
+        with pytest.raises(requests.exceptions.ConnectTimeout):
             client.get_bootstrap()
     assert m.call_count == 3
