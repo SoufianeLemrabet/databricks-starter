@@ -3,6 +3,13 @@
 # [tool.databricks.environment]
 # environment_version = "6"
 # ///
+# MAGIC %load_ext autoreload
+# MAGIC %autoreload 2
+# MAGIC # Enables autoreload; learn more at https://docs.databricks.com/en/files/workspace-modules.html#autoreload-for-python-modules
+# MAGIC # To disable autoreload; run %autoreload 0
+
+# COMMAND ----------
+
 
 
 # COMMAND ----------
@@ -24,7 +31,7 @@ from fpl_pipeline.bronze_writer import (
     write_bronze_players,
     write_bronze_teams,
     write_bronze_fixtures,
-    write_bronze_player_history,
+    write_bronze_player_history_batch,
 )
 
 # COMMAND ----------
@@ -58,6 +65,10 @@ client = FPLClient()
 # COMMAND ----------
 
 bootstrap_data = client.get_bootstrap()
+
+# COMMAND ----------
+
+
 
 write_bronze_players(spark, bootstrap_data, catalog=CATALOG)
 write_bronze_teams(spark, bootstrap_data, catalog=CATALOG)
@@ -101,11 +112,18 @@ write_bronze_fixtures(spark, fixtures_data, catalog=CATALOG)
 
 # COMMAND ----------
 
+# COMMAND ----------
 player_ids = [e["id"] for e in bootstrap_data["elements"]]
 
+all_history_records = []
 for player_id in player_ids:
     history_data = client.get_player_history(player_id)
-    write_bronze_player_history(spark, player_id, history_data, catalog=CATALOG)
+    for record in history_data["history"]:
+        record["player_id"] = player_id  # enrichissement avant accumulation
+        all_history_records.append(record)
+
+# COMMAND ----------
+write_bronze_player_history_batch(spark, all_history_records, catalog=CATALOG)
 
 # COMMAND ----------
 

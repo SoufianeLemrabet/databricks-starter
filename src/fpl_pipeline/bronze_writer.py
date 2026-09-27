@@ -13,14 +13,14 @@ def _now_utc() -> datetime:
     return datetime.now(timezone.utc)
 
 
-def _add_raw_payload(df: DataFrame, records: list[dict[str, Any]]) -> DataFrame:
-    """Ajoute une colonne raw_payload contenant le JSON brut de chaque enregistrement."""
-    raw_payloads = [json.dumps(r) for r in records]
-    payload_df = df.sparkSession.createDataFrame(
-        [(i, p) for i, p in enumerate(raw_payloads)], ["_row_id", "raw_payload"]
-    )
-    df_with_id = df.withColumn("_row_id", F.monotonically_increasing_id())
-    return df_with_id.join(payload_df, on="_row_id", how="left").drop("_row_id")
+def _add_raw_payload(records: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    """Ajoute le JSON brut comme champ de chaque record, avant la création du DataFrame."""
+    enriched = []
+    for r in records:
+        enriched_record = dict(r)  # copie pour ne pas muter l'original
+        enriched_record["raw_payload"] = json.dumps(r)
+        enriched.append(enriched_record)
+    return enriched
 
 
 def _drop_null_type_columns(df: DataFrame) -> DataFrame:
@@ -41,22 +41,15 @@ def _drop_null_type_columns(df: DataFrame) -> DataFrame:
     return df
 
 
-def write_bronze_players(
-    spark: SparkSession,
-    bootstrap_data: dict[str, Any],
-    catalog: str,
-    schema: str = "bronze",
-) -> None:
-    """Écrit bootstrap['elements'] dans bronze.players_snapshot."""
+def write_bronze_players(spark, bootstrap_data, catalog, schema="bronze"):
     elements = bootstrap_data["elements"]
-    ingestion_ts = _now_utc()
+    enriched = _add_raw_payload(elements)  # payload déjà dans chaque dict
 
-    df = spark.createDataFrame(pd.DataFrame(elements))
-    df = _add_raw_payload(df, elements)
-    df = df.withColumn("ingestion_ts", F.lit(ingestion_ts))
-    df = _drop_null_type_columns(df)
+    df = spark.createDataFrame(pd.DataFrame(enriched))
+    df = df.withColumn("ingestion_ts", F.lit(_now_utc()))
 
     table_name = f"{catalog}.{schema}.players_snapshot"
+    df = _drop_null_type_columns(df)
     df.write.format("delta").mode("append").saveAsTable(table_name)
 
 
@@ -70,8 +63,8 @@ def write_bronze_teams(
     teams = bootstrap_data["teams"]
     ingestion_ts = _now_utc()
 
-    df = spark.createDataFrame(pd.DataFrame(teams))
-    df = _add_raw_payload(df, teams)
+    df = spark.createDataFrame(pd.DataFrame(_add_raw_payload(teams)))
+
     df = df.withColumn("ingestion_ts", F.lit(ingestion_ts))
     df = _drop_null_type_columns(df)
 
@@ -88,8 +81,8 @@ def write_bronze_fixtures(
     """Écrit fixtures/ dans bronze.fixtures_snapshot."""
     ingestion_ts = _now_utc()
 
-    df = spark.createDataFrame(pd.DataFrame(fixtures_data))
-    df = _add_raw_payload(df, fixtures_data)
+    df = spark.createDataFrame(pd.DataFrame(_add_raw_payload(fixtures_data)))
+
     df = df.withColumn("ingestion_ts", F.lit(ingestion_ts))
     df = _drop_null_type_columns(df)
 
@@ -97,26 +90,24 @@ def write_bronze_fixtures(
     df.write.format("delta").mode("append").saveAsTable(table_name)
 
 
-def write_bronze_player_history(
+def write_bronze_player_history_batch(
     spark: SparkSession,
-    player_id: int,
-    history_data: dict[str, Any],
+    all_history_records: list[dict[str, Any]],
     catalog: str,
     schema: str = "bronze",
 ) -> None:
-    """Écrit element-summary/{player_id}/['history'] dans bronze.player_gameweek_history."""
-    history = history_data["history"]
-    if not history:
-        return  # joueur sans historique (ex: n'a pas encore joué cette saison)
+    """
+    Écrit l'historique de TOUS les joueurs en une seule fois.
+    all_history_records : liste de dicts, chacun étant une ligne d'historique
+    (déjà enrichie avec player_id), toutes gameweeks/joueurs confondus.
+    """
+    if not all_history_records:
+        return
 
     ingestion_ts = _now_utc()
 
-    df = spark.createDataFrame(pd.DataFrame(history))
-    df = _add_raw_payload(df, history)
-    df = df.withColumn("ingestion_ts", F.lit(ingestion_ts)).withColumn(
-        "player_id", F.lit(player_id)
-    )
-    df = _drop_null_type_columns(df)
+    df = spark.createDataFrame(_add_raw_payload(all_history_records))
+    df = df.withColumn("ingestion_ts", F.lit(ingestion_ts))
 
     table_name = f"{catalog}.{schema}.player_gameweek_history"
     df.write.format("delta").mode("append").saveAsTable(table_name)
