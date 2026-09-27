@@ -2,8 +2,10 @@ import json
 from datetime import datetime, timezone
 from typing import Any
 
+import pandas as pd
 from pyspark.sql import DataFrame, SparkSession
 from pyspark.sql import functions as F
+from pyspark.sql.types import ArrayType, NullType, StructType
 
 
 def _now_utc() -> datetime:
@@ -21,6 +23,24 @@ def _add_raw_payload(df: DataFrame, records: list[dict[str, Any]]) -> DataFrame:
     return df_with_id.join(payload_df, on="_row_id", how="left").drop("_row_id")
 
 
+def _drop_null_type_columns(df: DataFrame) -> DataFrame:
+    """Drop les colonnes contenant du NullType (Delta ne supporte pas NullType dans les types complexes)."""
+
+    def _has_null_type(dt):
+        if isinstance(dt, NullType):
+            return True
+        if isinstance(dt, ArrayType):
+            return _has_null_type(dt.elementType)
+        if isinstance(dt, StructType):
+            return any(_has_null_type(f.dataType) for f in dt.fields)
+        return False
+
+    cols_to_drop = [f.name for f in df.schema.fields if _has_null_type(f.dataType)]
+    if cols_to_drop:
+        df = df.drop(*cols_to_drop)
+    return df
+
+
 def write_bronze_players(
     spark: SparkSession,
     bootstrap_data: dict[str, Any],
@@ -31,9 +51,10 @@ def write_bronze_players(
     elements = bootstrap_data["elements"]
     ingestion_ts = _now_utc()
 
-    df = spark.createDataFrame(elements)
+    df = spark.createDataFrame(pd.DataFrame(elements))
     df = _add_raw_payload(df, elements)
     df = df.withColumn("ingestion_ts", F.lit(ingestion_ts))
+    df = _drop_null_type_columns(df)
 
     table_name = f"{catalog}.{schema}.players_snapshot"
     df.write.format("delta").mode("append").saveAsTable(table_name)
@@ -49,9 +70,10 @@ def write_bronze_teams(
     teams = bootstrap_data["teams"]
     ingestion_ts = _now_utc()
 
-    df = spark.createDataFrame(teams)
+    df = spark.createDataFrame(pd.DataFrame(teams))
     df = _add_raw_payload(df, teams)
     df = df.withColumn("ingestion_ts", F.lit(ingestion_ts))
+    df = _drop_null_type_columns(df)
 
     table_name = f"{catalog}.{schema}.teams_snapshot"
     df.write.format("delta").mode("append").saveAsTable(table_name)
@@ -66,9 +88,10 @@ def write_bronze_fixtures(
     """Écrit fixtures/ dans bronze.fixtures_snapshot."""
     ingestion_ts = _now_utc()
 
-    df = spark.createDataFrame(fixtures_data)
+    df = spark.createDataFrame(pd.DataFrame(fixtures_data))
     df = _add_raw_payload(df, fixtures_data)
     df = df.withColumn("ingestion_ts", F.lit(ingestion_ts))
+    df = _drop_null_type_columns(df)
 
     table_name = f"{catalog}.{schema}.fixtures_snapshot"
     df.write.format("delta").mode("append").saveAsTable(table_name)
@@ -88,11 +111,12 @@ def write_bronze_player_history(
 
     ingestion_ts = _now_utc()
 
-    df = spark.createDataFrame(history)
+    df = spark.createDataFrame(pd.DataFrame(history))
     df = _add_raw_payload(df, history)
     df = df.withColumn("ingestion_ts", F.lit(ingestion_ts)).withColumn(
         "player_id", F.lit(player_id)
     )
+    df = _drop_null_type_columns(df)
 
     table_name = f"{catalog}.{schema}.player_gameweek_history"
     df.write.format("delta").mode("append").saveAsTable(table_name)
