@@ -1,11 +1,13 @@
 import json
 from datetime import datetime, timezone
 from typing import Any
-
 import pandas as pd
 from pyspark.sql import DataFrame, SparkSession
 from pyspark.sql import functions as F
 from pyspark.sql.types import ArrayType, NullType, StructType
+from fpl_pipeline.logging_config import get_logger, log_step
+
+logger = get_logger(__name__)
 
 
 def _now_utc() -> datetime:
@@ -40,9 +42,10 @@ def _drop_null_type_columns(df: DataFrame) -> DataFrame:
         df = df.drop(*cols_to_drop)
     return df
 
-
+@log_step("bronze_write", table="players_snapshot")
 def write_bronze_players(spark, bootstrap_data, catalog, schema="bronze"):
     elements = bootstrap_data["elements"]
+    logger.info("bronze_write_started", table="players_snapshot", row_count=len(elements))
     enriched = _add_raw_payload(elements)  # payload déjà dans chaque dict
 
     df = spark.createDataFrame(pd.DataFrame(enriched))
@@ -50,9 +53,9 @@ def write_bronze_players(spark, bootstrap_data, catalog, schema="bronze"):
 
     table_name = f"{catalog}.{schema}.players_snapshot"
     df = _drop_null_type_columns(df)
-    df.write.format("delta").mode("append").saveAsTable(table_name)
+    df.write.format("delta").mode("overwrite").saveAsTable(table_name)
 
-
+@log_step("bronze_write", table="teams_snapshot")
 def write_bronze_teams(
     spark: SparkSession,
     bootstrap_data: dict[str, Any],
@@ -69,9 +72,9 @@ def write_bronze_teams(
     df = _drop_null_type_columns(df)
 
     table_name = f"{catalog}.{schema}.teams_snapshot"
-    df.write.format("delta").mode("append").saveAsTable(table_name)
+    df.write.format("delta").mode("overwrite").saveAsTable(table_name)
 
-
+@log_step("bronze_write", table="fixtures_snapshot")
 def write_bronze_fixtures(
     spark: SparkSession,
     fixtures_data: list[dict[str, Any]],
@@ -87,9 +90,9 @@ def write_bronze_fixtures(
     df = _drop_null_type_columns(df)
 
     table_name = f"{catalog}.{schema}.fixtures_snapshot"
-    df.write.format("delta").mode("append").saveAsTable(table_name)
+    df.write.format("delta").mode("overwrite").saveAsTable(table_name)
 
-
+@log_step("bronze_write", table="players_history_snapshot")
 def write_bronze_player_history_batch(
     spark: SparkSession,
     all_history_records: list[dict[str, Any]],
@@ -110,4 +113,4 @@ def write_bronze_player_history_batch(
     df = df.withColumn("ingestion_ts", F.lit(ingestion_ts))
 
     table_name = f"{catalog}.{schema}.player_gameweek_history"
-    df.write.format("delta").mode("append").saveAsTable(table_name)
+    df.write.format("delta").mode("overwrite").saveAsTable(table_name)

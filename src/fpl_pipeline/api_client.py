@@ -1,8 +1,10 @@
 from typing import Any
-
 import requests
+import structlog
 from tenacity import retry, stop_after_attempt, wait_exponential
+from fpl_pipeline.logging_config import get_logger
 
+logger = get_logger(__name__)
 
 class FPLAPIError(Exception):
     """Erreur levée lors d'un appel à l'API FPL."""
@@ -37,14 +39,17 @@ class FPLClient:
             endpoint: chemin relatif à BASE_URL (ex: "bootstrap-static/")
         """
         url = f"{self.BASE_URL}/{endpoint}"
+        logger.info("api_call_started", endpoint=endpoint, url=url)
         try:
             response = self.session.get(url, timeout=self.timeout)
             response.raise_for_status()
         except requests.exceptions.RequestException:  # noqa: TRY203
+            logger.error("api_call_failed", endpoint=endpoint, error=str(e))
             raise
         try:
             return response.json()
         except ValueError as e:
+            logger.error("api_response_invalid_json", endpoint=endpoint)
             raise FPLAPIError(f"Réponse non-JSON depuis {url}") from e
 
     def get_bootstrap(self) -> dict[str, Any]:

@@ -10,10 +10,6 @@
 
 # COMMAND ----------
 
-
-
-# COMMAND ----------
-
 # MAGIC %md
 # MAGIC # Bronze Ingestion — FPL Pipeline
 # MAGIC Orchestration notebook : appelle le client API et écrit les résultats en Delta.
