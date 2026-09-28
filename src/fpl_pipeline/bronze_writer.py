@@ -1,10 +1,12 @@
 import json
 from datetime import datetime, timezone
 from typing import Any
+
 import pandas as pd
 from pyspark.sql import DataFrame, SparkSession
 from pyspark.sql import functions as F
 from pyspark.sql.types import ArrayType, NullType, StructType
+
 from fpl_pipeline.logging_config import get_logger, log_step
 
 logger = get_logger(__name__)

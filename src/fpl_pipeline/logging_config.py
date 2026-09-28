@@ -1,9 +1,10 @@
 # src/fpl_pipeline/logging_config.py
+import functools
 import logging
 import sys
-import functools
 import time
 from typing import Any
+
 import structlog
 
 

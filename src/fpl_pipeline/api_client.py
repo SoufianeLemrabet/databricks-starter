@@ -1,10 +1,12 @@
 from typing import Any
+
 import requests
-import structlog
 from tenacity import retry, stop_after_attempt, wait_exponential
+
 from fpl_pipeline.logging_config import get_logger
 
 logger = get_logger(__name__)
+
 
 class FPLAPIError(Exception):
     """Erreur levée lors d'un appel à l'API FPL."""
@@ -43,7 +45,7 @@ class FPLClient:
         try:
             response = self.session.get(url, timeout=self.timeout)
             response.raise_for_status()
-        except requests.exceptions.RequestException:  # noqa: TRY203
+        except requests.exceptions.RequestException as e:
             logger.error("api_call_failed", endpoint=endpoint, error=str(e))
             raise
         try:
