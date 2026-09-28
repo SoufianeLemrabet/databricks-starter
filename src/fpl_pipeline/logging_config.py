@@ -47,6 +47,7 @@ def get_logger(name: str) -> structlog.BoundLogger:
 
 def log_step(event: str, **fields: Any):
     """Logue started / completed / failed (avec durée) autour d'une fonction."""
+
     def decorator(func):
         @functools.wraps(func)
         def wrapper(*args, **kwargs):
@@ -70,5 +71,7 @@ def log_step(event: str, **fields: Any):
                 **fields,
             )
             return result
+
         return wrapper
+
     return decorator

@@ -44,10 +44,13 @@ def _drop_null_type_columns(df: DataFrame) -> DataFrame:
         df = df.drop(*cols_to_drop)
     return df
 
+
 @log_step("bronze_write", table="players_snapshot")
 def write_bronze_players(spark, bootstrap_data, catalog, schema="bronze"):
     elements = bootstrap_data["elements"]
-    logger.info("bronze_write_started", table="players_snapshot", row_count=len(elements))
+    logger.info(
+        "bronze_write_started", table="players_snapshot", row_count=len(elements)
+    )
     enriched = _add_raw_payload(elements)  # payload déjà dans chaque dict
 
     df = spark.createDataFrame(pd.DataFrame(enriched))
@@ -56,6 +59,7 @@ def write_bronze_players(spark, bootstrap_data, catalog, schema="bronze"):
     table_name = f"{catalog}.{schema}.players_snapshot"
     df = _drop_null_type_columns(df)
     df.write.format("delta").mode("overwrite").saveAsTable(table_name)
+
 
 @log_step("bronze_write", table="teams_snapshot")
 def write_bronze_teams(
@@ -76,6 +80,7 @@ def write_bronze_teams(
     table_name = f"{catalog}.{schema}.teams_snapshot"
     df.write.format("delta").mode("overwrite").saveAsTable(table_name)
 
+
 @log_step("bronze_write", table="fixtures_snapshot")
 def write_bronze_fixtures(
     spark: SparkSession,
@@ -93,6 +98,7 @@ def write_bronze_fixtures(
 
     table_name = f"{catalog}.{schema}.fixtures_snapshot"
     df.write.format("delta").mode("overwrite").saveAsTable(table_name)
+
 
 @log_step("bronze_write", table="players_history_snapshot")
 def write_bronze_player_history_batch(
