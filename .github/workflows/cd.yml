@@ -20,7 +20,7 @@ jobs:
     if: >
       github.event_name == 'workflow_dispatch' ||
       github.event.workflow_run.conclusion == 'success'
-    environment :  ${{ inputs.environment }}
+    environment :  ${{ inputs.environment || 'prod'}}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
