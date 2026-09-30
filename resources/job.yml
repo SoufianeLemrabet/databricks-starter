@@ -5,6 +5,11 @@ resources:
       schedule:
         quartz_cron_expression: 0 0 6 ? * TUE
         timezone_id: Europe/Paris
+      email_notifications:
+        on_success:
+          - makamaia226@gmail.com
+        on_failure:
+          - makamaia226@gmail.com
       tasks:
         - task_key: FPL_Bronze_Ingestion
           notebook_task:
@@ -13,11 +18,7 @@ resources:
             base_parameters:
               catalog: ${var.catalog}
 
-          email_notifications:
-            on_success:
-              - makamaia226@gmail.com
-            on_failure:
-              - makamaia226@gmail.com
+
           environment_key: FPL_Bronze_Ingestion_environment
         - task_key: Silver_transformation
           depends_on:
