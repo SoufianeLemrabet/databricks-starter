@@ -15,7 +15,7 @@ on:
 
 jobs:
   deploy:
-    environment :  ${{ steps.env.outputs.target }}
+    environment :  ${{ inputs.environment }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
