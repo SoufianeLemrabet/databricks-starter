@@ -23,3 +23,4 @@ targets:
     mode: production
     workspace:
       host: https://dbc-0071ca78-a788.cloud.databricks.com
+      root_path: /Workspace/Users/soufianelemrabet7@gmail.com/.bundle/${bundle.name}/${bundle.target}
