@@ -5,7 +5,6 @@ resources:
       schedule:
         quartz_cron_expression: 0 0 6 ? * TUE
         timezone_id: Europe/Paris
-        pause_status: UNPAUSED
       tasks:
         - task_key: FPL_Bronze_Ingestion
           notebook_task:

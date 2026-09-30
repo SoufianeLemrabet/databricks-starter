@@ -19,3 +19,7 @@ targets:
     mode: development
     workspace:
       host: https://dbc-0071ca78-a788.cloud.databricks.com
+  prod:
+    mode: production
+    workspace:
+      host: https://dbc-0071ca78-a788.cloud.databricks.com
