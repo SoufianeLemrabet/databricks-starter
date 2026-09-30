@@ -1,0 +1,63 @@
+resources:
+  jobs:
+    FPL:
+      name: FPL
+      schedule:
+        quartz_cron_expression: 0 0 6 ? * TUE
+        timezone_id: Europe/Paris
+        pause_status: UNPAUSED
+      tasks:
+        - task_key: FPL_Bronze_Ingestion
+          notebook_task:
+            notebook_path: ../notebooks/bronze_ingestion.py
+            source: WORKSPACE
+            base_parameters:
+              catalog: ${var.catalog}
+
+          email_notifications:
+            on_success:
+              - makamaia226@gmail.com
+            on_failure:
+              - makamaia226@gmail.com
+          environment_key: FPL_Bronze_Ingestion_environment
+        - task_key: Silver_transformation
+          depends_on:
+            - task_key: FPL_Bronze_Ingestion
+          notebook_task:
+            notebook_path: ../notebooks/silver_transformation.py
+            source: WORKSPACE
+            base_parameters:
+              catalog: ${var.catalog}
+
+          environment_key: Silver_transformation_environment
+        - task_key: Gold_Transformation
+          depends_on:
+            - task_key: Silver_transformation
+          notebook_task:
+            notebook_path: ../notebooks/gold_transformation.py
+            source: WORKSPACE
+            base_parameters:
+              catalog: ${var.catalog}
+          environment_key: Gold_Transformation_environment
+      queue:
+        enabled: true
+      environments:
+        - environment_key: FPL_Bronze_Ingestion_environment
+          spec:
+            dependencies:
+              - -r
+                ../requirements.txt
+            environment_version: "6"
+        - environment_key: Gold_Transformation_environment
+          spec:
+            dependencies:
+              - -r
+                ../requirements.txt
+            environment_version: "6"
+        - environment_key: Silver_transformation_environment
+          spec:
+            dependencies:
+              - -r
+                ../requirements.txt
+            environment_version: "6"
+      performance_target: PERFORMANCE_OPTIMIZED

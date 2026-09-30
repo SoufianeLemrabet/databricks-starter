@@ -1,0 +1,21 @@
+# databricks.yml
+bundle:
+  name: fpl-pipeline
+
+include:
+  - resources/*.yml
+
+variables:
+  catalog:
+    description: "Catalog Unity Catalog (créé manuellement au préalable, voir README)"
+    default: "fpl_project"
+  notification_email:
+    description: "Email d'alerte en cas d'échec du job"
+    default: "makamaia226@gmail.com"
+
+targets:
+  dev:
+    default: true
+    mode: development
+    workspace:
+      host: https://dbc-0071ca78-a788.cloud.databricks.com

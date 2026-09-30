@@ -1,0 +1,17 @@
+# resources/schemas.yml
+resources:
+  schemas:
+    bronze_schema:
+      name: bronze
+      catalog_name: ${var.catalog}
+      comment: "Snapshots bruts issus de l'API FPL, overwrite complet à chaque run"
+
+    silver_schema:
+      name: silver
+      catalog_name: ${var.catalog}
+      comment: "Données nettoyées, typées, jointes — reconstruites depuis Bronze à chaque run"
+
+    gold_schema:
+      name: gold
+      catalog_name: ${var.catalog}
+      comment: "Agrégats de recommandation pour la sélection d'équipe fantasy"

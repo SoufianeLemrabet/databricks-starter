@@ -26,7 +26,8 @@ logger = get_logger("silver_transformation")
 # MAGIC ## Configuration
 
 # COMMAND ----------
-CATALOG = "fpl"  # TODO: même catalog que Bronze
+dbutils.widgets.text("catalog", "")
+CATALOG = dbutils.widgets.get("catalog")
 
 # COMMAND ----------
 # MAGIC %md

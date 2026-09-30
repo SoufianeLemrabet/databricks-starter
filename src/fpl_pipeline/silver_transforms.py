@@ -13,7 +13,6 @@ def transform_silver_teams(bronze_teams: DataFrame) -> DataFrame:
         F.col("id").alias("team_id"),
         F.col("name").alias("team_name"),
         F.col("short_name"),
-        F.col("strength").cast("int"),
         F.col("strength_overall_home").cast("int"),
         F.col("strength_overall_away").cast("int"),
         F.col("strength_attack_home").cast("int"),

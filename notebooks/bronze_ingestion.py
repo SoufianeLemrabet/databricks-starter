@@ -35,9 +35,10 @@ from fpl_pipeline.bronze_writer import (
 # MAGIC %md
 # MAGIC ## Configuration
 
-# COMMAND ----------
 
-CATALOG = "fpl"  # TODO: renseigner ton catalog Unity Catalog
+# COMMAND ----------
+dbutils.widgets.text("catalog", "")
+CATALOG = dbutils.widgets.get("catalog")
 
 # COMMAND ----------
 

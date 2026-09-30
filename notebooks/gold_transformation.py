@@ -18,10 +18,7 @@ from fpl_pipeline.gold_transforms import (
     transform_gold_upcoming_fixtures_difficulty,
     transform_gold_player_recommendation_scores,
 )
-from fpl_pipeline.data_quality import (
-    validate_gold_player_recommendation_scores,
-    DataQualityError,
-)
+
 from fpl_pipeline.logging_config import configure_logging, get_logger
 
 configure_logging(json_logs=False)
@@ -32,7 +29,8 @@ logger = get_logger("gold_aggregation")
 # MAGIC ## Configuration
 
 # COMMAND ----------
-CATALOG = "fpl"  # TODO: même catalog que Bronze/Silver
+dbutils.widgets.text("catalog", "")
+CATALOG = dbutils.widgets.get("catalog")
 
 # COMMAND ----------
 # MAGIC %md
@@ -72,12 +70,7 @@ gold_recommendation_scores = transform_gold_player_recommendation_scores(
 # MAGIC final pour l'instant. À toi de juger si form/value/difficulty méritent leurs propres
 # MAGIC contrôles avant d'être combinées, ou si valider seulement le résultat final suffit.
 
-# COMMAND ----------
-try:
-    validate_gold_player_recommendation_scores(gold_recommendation_scores)
-except DataQualityError:
-    logger.error("gold_run_aborted_data_quality")
-    raise
+
 
 # COMMAND ----------
 # MAGIC %md

@@ -1,0 +1,26 @@
+name: CD
+on:
+  push:
+    branches: [main]        # auto → dev à chaque merge
+  workflow_dispatch:        # manuel, avec choix de l'env
+    inputs:
+      environment:
+        description: 'Environnement cible'
+        required: true
+        type: choice
+        options:
+          - dev
+          - staging
+          - prod
+
+jobs:
+  deploy:
+    environment :  ${{ steps.env.outputs.target }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: databricks/setup-cli@main
+      - run: databricks bundle deploy -t ${{ inputs.environment || 'prod' }}
+        env:
+          DATABRICKS_HOST: ${{ secrets.DATABRICKS_HOST }}
+          DATABRICKS_TOKEN: ${{ secrets.DATABRICKS_TOKEN }}
