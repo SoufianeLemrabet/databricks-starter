@@ -1,6 +1,6 @@
 # app/app.py
 import os
-
+from databricks.sdk.core import Config
 import pandas as pd
 import streamlit as st
 from databricks import sql
@@ -11,15 +11,12 @@ st.set_page_config(page_title="FPL Player Rankings", layout="wide")
 
 @st.cache_resource
 def get_connection():
-    """
-    Connexion SQL mise en cache (une seule fois par session).
-    Dans Databricks Apps, les credentials sont injectés automatiquement via
-    les variables d'environnement DATABRICKS_* configurées sur l'app.
-    """
+    cfg = Config()  # lit DATABRICKS_HOST, DATABRICKS_CLIENT_ID, DATABRICKS_CLIENT_SECRET automatiquement
+    warehouse_id = os.getenv("DATABRICKS_WAREHOUSE_ID")
     return sql.connect(
-        server_hostname=os.getenv("DATABRICKS_HOST"),
-        http_path=os.getenv("DATABRICKS_HTTP_PATH"),
-        access_token=os.getenv("DATABRICKS_TOKEN"),
+        server_hostname=cfg.host,
+        http_path=f"/sql/1.0/warehouses/{warehouse_id}",
+        credentials_provider=lambda: cfg.authenticate,
     )
 
 
