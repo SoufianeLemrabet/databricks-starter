@@ -1,10 +1,11 @@
 # app/app.py
 import os
-from databricks.sdk.core import Config
+
 import pandas as pd
 import streamlit as st
 from databricks import sql
-
+from databricks.sdk.core import Config
+from databricks.sql.exc import DatabaseError, OperationalError
 
 st.set_page_config(page_title="FPL Player Rankings", layout="wide")
 
@@ -42,7 +43,7 @@ if st.sidebar.button("Rafraîchir les données", type="primary"):
 # --- Chargement ---
 try:
     df = load_player_rankings(catalog)
-except Exception as e:
+except (DatabaseError, OperationalError) as e:
     st.error(f"Erreur de connexion aux données : {e}")
     st.stop()
 

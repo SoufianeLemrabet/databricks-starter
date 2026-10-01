@@ -1,7 +1,7 @@
 # src/fpl_pipeline/team_optimizer.py
 from dataclasses import dataclass
-import pulp
 
+import pulp
 
 DEFAULT_BUDGET = 100.0
 SQUAD_SIZE = 15

@@ -364,7 +364,37 @@ def test_recommendation_scores_best_player_ranks_first(spark):
             {"player_id": 2, "points_per_million": 1.0, "cost_millions": 5.0},
         ]
     )
-    # ... reste du test inchangé
+    upcoming_difficulty = spark.createDataFrame(
+        [
+            {"team_id": 1, "avg_upcoming_difficulty": 2.0},  # calendrier facile
+            {"team_id": 2, "avg_upcoming_difficulty": 5.0},  # calendrier dur
+        ]
+    )
+    silver_players = spark.createDataFrame(
+        [
+            {
+                "player_id": 1,
+                "web_name": "Best",
+                "position": "MID",
+                "team_id": 1,
+                "status": "a",
+            },
+            {
+                "player_id": 2,
+                "web_name": "Worst",
+                "position": "MID",
+                "team_id": 2,
+                "status": "a",
+            },
+        ]
+    )
+
+    result = transform_gold_player_recommendation_scores(
+        player_form, player_value, upcoming_difficulty, silver_players
+    ).collect()
+
+    assert result[0]["player_id"] == 1  # meilleur sur tout -> premier du classement
+    assert result[0]["recommendation_score"] > result[1]["recommendation_score"]
 
 
 def test_recommendation_scores_filters_unavailable_players(spark):
@@ -372,7 +402,26 @@ def test_recommendation_scores_filters_unavailable_players(spark):
     player_value = spark.createDataFrame(
         [{"player_id": 1, "points_per_million": 10.0, "cost_millions": 10.0}]
     )
-    # ... reste du test inchangé
+    upcoming_difficulty = spark.createDataFrame(
+        [{"team_id": 1, "avg_upcoming_difficulty": 1.0}]
+    )
+    silver_players = spark.createDataFrame(
+        [
+            {
+                "player_id": 1,
+                "web_name": "Injured",
+                "position": "FWD",
+                "team_id": 1,
+                "status": "i",
+            }
+        ]
+    )
+
+    result = transform_gold_player_recommendation_scores(
+        player_form, player_value, upcoming_difficulty, silver_players
+    ).collect()
+
+    assert len(result) == 0
 
 
 def test_recommendation_scores_handles_missing_upcoming_difficulty(spark):
