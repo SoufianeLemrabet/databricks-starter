@@ -378,6 +378,8 @@ def test_recommendation_scores_best_player_ranks_first(spark):
                 "position": "MID",
                 "team_id": 1,
                 "status": "a",
+                "first_name": "KSE",
+                "second_name": "Bob",
             },
             {
                 "player_id": 2,
@@ -385,6 +387,8 @@ def test_recommendation_scores_best_player_ranks_first(spark):
                 "position": "MID",
                 "team_id": 2,
                 "status": "a",
+                "first_name": "KS",
+                "second_name": "Olise",
             },
         ]
     )
@@ -409,8 +413,10 @@ def test_recommendation_scores_filters_unavailable_players(spark):
         [
             {
                 "player_id": 1,
-                "web_name": "Injured",
-                "position": "FWD",
+                "web_name": "Salah",
+                "first_name": "Mohamed",
+                "second_name": "Salah",
+                "position": "MID",
                 "team_id": 1,
                 "status": "i",
             }
@@ -438,8 +444,10 @@ def test_recommendation_scores_handles_missing_upcoming_difficulty(spark):
         [
             {
                 "player_id": 1,
-                "web_name": "NoFixture",
-                "position": "DEF",
+                "web_name": "Salah",
+                "first_name": "Mohamed",
+                "second_name": "Salah",
+                "position": "MID",
                 "team_id": 1,
                 "status": "a",
             }

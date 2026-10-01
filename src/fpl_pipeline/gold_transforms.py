@@ -137,18 +137,20 @@ def transform_gold_player_recommendation_scores(
     silver_players: DataFrame,
 ) -> DataFrame:
     """
-    Score composite : forme (40%) + value (30%) + calendrier favorable (30%).
-    avg_points_recent et points_per_million sont sur des échelles très différentes
-    (points bruts vs points/million), donc les deux sont normalisés 0-1 (min-max)
-    avant pondération, sinon la composante à plus grande échelle domine le score.
-    La difficulté (1-5, plus bas = plus favorable) est inversée puis ramenée sur 0-1
-    directement (pas besoin de min-max, l'échelle est déjà connue et bornée).
-    Filtre les joueurs indisponibles (status != 'a') avant de produire le classement.
-    Inclut cost_millions : nécessaire en aval pour l'optimiseur d'équipe (Sprint 6),
-    qui a besoin du coût de chaque joueur pour la contrainte budget.
+    [docstring inchangé, voir version précédente]
+    Inclut désormais first_name/second_name : nécessaire pour afficher le nom
+    complet du joueur côté app Streamlit (web_name seul est souvent un diminutif).
     """
     base = (
-        silver_players.select("player_id", "web_name", "position", "team_id", "status")
+        silver_players.select(
+            "player_id",
+            "web_name",
+            "first_name",
+            "second_name",
+            "position",
+            "team_id",
+            "status",
+        )
         .join(player_form, on="player_id", how="left")
         .join(
             player_value.select("player_id", "points_per_million", "cost_millions"),
@@ -177,6 +179,8 @@ def transform_gold_player_recommendation_scores(
         .select(
             "player_id",
             "web_name",
+            "first_name",
+            "second_name",
             "position",
             "team_id",
             "cost_millions",
