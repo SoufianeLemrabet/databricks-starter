@@ -1,2 +1,6 @@
 # app/app.yaml
 command: ['streamlit', 'run', 'app.py']
+
+env:
+  - name: "DATABRICKS_WAREHOUSE_ID"
+    valueFrom: "sql-warehouse"

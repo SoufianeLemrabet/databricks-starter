@@ -1,5 +1,4 @@
 # app/requirements.txt
 streamlit
 databricks-sql-connector
-pulp
 pandas
