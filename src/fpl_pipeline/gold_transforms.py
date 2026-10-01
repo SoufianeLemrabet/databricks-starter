@@ -144,12 +144,14 @@ def transform_gold_player_recommendation_scores(
     La difficulté (1-5, plus bas = plus favorable) est inversée puis ramenée sur 0-1
     directement (pas besoin de min-max, l'échelle est déjà connue et bornée).
     Filtre les joueurs indisponibles (status != 'a') avant de produire le classement.
+    Inclut cost_millions : nécessaire en aval pour l'optimiseur d'équipe (Sprint 6),
+    qui a besoin du coût de chaque joueur pour la contrainte budget.
     """
     base = (
         silver_players.select("player_id", "web_name", "position", "team_id", "status")
         .join(player_form, on="player_id", how="left")
         .join(
-            player_value.select("player_id", "points_per_million"),
+            player_value.select("player_id", "points_per_million", "cost_millions"),
             on="player_id",
             how="left",
         )
@@ -159,7 +161,6 @@ def transform_gold_player_recommendation_scores(
     base = base.withColumn(
         "fixture_favorability_norm",
         (F.lit(5) - F.coalesce(F.col("avg_upcoming_difficulty"), F.lit(3))) / F.lit(4),
-        # difficulté 1 (facile) -> favorability 1.0 ; difficulté 5 (dur) -> favorability 0.0
     )
 
     scored = _min_max_normalize(base, ["avg_points_recent", "points_per_million"])
@@ -178,6 +179,7 @@ def transform_gold_player_recommendation_scores(
             "web_name",
             "position",
             "team_id",
+            "cost_millions",
             "avg_points_recent",
             "points_per_million",
             "avg_upcoming_difficulty",

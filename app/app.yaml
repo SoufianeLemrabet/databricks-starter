@@ -1,0 +1,2 @@
+# app/app.yaml
+command: ['streamlit', 'run', 'app.py']

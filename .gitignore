@@ -7,6 +7,6 @@ tests/__pycache__/
 .coverage.*
 htmlcov/
 coverage.xml
-
+app/.venv
 # Tests / outils
 .pytest_cache/
