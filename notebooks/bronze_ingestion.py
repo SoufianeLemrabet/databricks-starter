@@ -97,8 +97,7 @@ spark.createDataFrame([{
     "deadline_time": current_gw["deadline_time"],
     "finished": current_gw["finished"],
 }]).write.format("delta").mode("overwrite").saveAsTable(f"{CATALOG}.bronze.current_gameweek")
-# MAGIC %md
-# MAGIC ## Fixtures
+
 
 # COMMAND ----------
 
