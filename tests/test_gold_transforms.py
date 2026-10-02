@@ -380,6 +380,8 @@ def test_recommendation_scores_best_player_ranks_first(spark):
                 "status": "a",
                 "first_name": "KSE",
                 "second_name": "Bob",
+                "photo": "83838.jpg",
+                "team_code": "ARS",
             },
             {
                 "player_id": 2,
@@ -389,6 +391,8 @@ def test_recommendation_scores_best_player_ranks_first(spark):
                 "status": "a",
                 "first_name": "KS",
                 "second_name": "Olise",
+                "photo": "83838.jpg",
+                "team_code": "ARS",
             },
         ]
     )
@@ -419,6 +423,8 @@ def test_recommendation_scores_filters_unavailable_players(spark):
                 "position": "MID",
                 "team_id": 1,
                 "status": "i",
+                "photo": "83838.jpg",
+                "team_code": "ARS",
             }
         ]
     )
@@ -450,6 +456,8 @@ def test_recommendation_scores_handles_missing_upcoming_difficulty(spark):
                 "position": "MID",
                 "team_id": 1,
                 "status": "a",
+                "photo": "83838.jpg",
+                "team_code": "ARS",
             }
         ]
     )

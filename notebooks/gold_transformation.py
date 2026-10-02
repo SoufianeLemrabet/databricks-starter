@@ -43,7 +43,7 @@ silver_teams = spark.table(f"{CATALOG}.silver.teams")
 silver_players = spark.table(f"{CATALOG}.silver.players")
 silver_fixtures = spark.table(f"{CATALOG}.silver.fixtures")
 silver_stats = spark.table(f"{CATALOG}.silver.player_gameweek_stats")
-
+silver_current_gameweek = spark.table(f"{CATALOG}.silver.current_gameweek")
 # COMMAND ----------
 # MAGIC %md
 # MAGIC ## Transformations
@@ -54,7 +54,7 @@ silver_stats = spark.table(f"{CATALOG}.silver.player_gameweek_stats")
 gold_player_form = transform_gold_player_form(silver_stats)
 gold_player_value = transform_gold_player_value(silver_players)
 gold_upcoming_difficulty = transform_gold_upcoming_fixtures_difficulty(silver_fixtures)
-
+gold_current_gameweek = silver_current_gameweek
 # COMMAND ----------
 gold_recommendation_scores = transform_gold_player_recommendation_scores(
     gold_player_form,
@@ -85,6 +85,7 @@ gold_upcoming_difficulty.write.format("delta").mode("overwrite").saveAsTable(
 gold_recommendation_scores.write.format("delta").mode("overwrite").saveAsTable(
     f"{CATALOG}.gold.player_recommendation_scores"
 )
+gold_current_gameweek.write.format("delta").mode("overwrite").saveAsTable(f"{CATALOG}.gold.current_gameweek")
 
 logger.info("gold_run_completed")
 

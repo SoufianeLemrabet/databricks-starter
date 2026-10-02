@@ -136,19 +136,19 @@ def transform_gold_player_recommendation_scores(
     upcoming_difficulty: DataFrame,
     silver_players: DataFrame,
 ) -> DataFrame:
-    """
-    [docstring inchangé, voir version précédente]
-    Inclut désormais first_name/second_name : nécessaire pour afficher le nom
-    complet du joueur côté app Streamlit (web_name seul est souvent un diminutif).
-    """
+    """[docstring inchangé]
+    Inclut désormais photo et team_code : nécessaires pour afficher le portrait
+    du joueur et le badge de son équipe côté app Streamlit."""
     base = (
         silver_players.select(
             "player_id",
             "web_name",
             "first_name",
             "second_name",
+            "photo",
             "position",
             "team_id",
+            "team_code",
             "status",
         )
         .join(player_form, on="player_id", how="left")
@@ -181,8 +181,10 @@ def transform_gold_player_recommendation_scores(
             "web_name",
             "first_name",
             "second_name",
+            "photo",
             "position",
             "team_id",
+            "team_code",
             "cost_millions",
             "avg_points_recent",
             "points_per_million",

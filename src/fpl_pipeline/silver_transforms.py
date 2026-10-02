@@ -8,11 +8,14 @@ ELEMENT_TYPE_MAP = {1: "GKP", 2: "DEF", 3: "MID", 4: "FWD"}
 
 
 def transform_silver_teams(bronze_teams: DataFrame) -> DataFrame:
-    """Nettoie bronze_teams_snapshot : retire les champs jamais alimentés par FPL, garde le référentiel utile."""
+    """Nettoie bronze_teams_snapshot. Inclut code : identifiant stable utilisé pour
+    construire l'URL du badge officiel (resources.premierleague.com/.../t{code}.png)."""
     return bronze_teams.select(
         F.col("id").alias("team_id"),
+        F.col("code").alias("team_code"),
         F.col("name").alias("team_name"),
         F.col("short_name"),
+        F.col("strength").cast("int"),
         F.col("strength_overall_home").cast("int"),
         F.col("strength_overall_away").cast("int"),
         F.col("strength_attack_home").cast("int"),
@@ -25,7 +28,8 @@ def transform_silver_teams(bronze_teams: DataFrame) -> DataFrame:
 def transform_silver_players(
     bronze_players: DataFrame, silver_teams: DataFrame
 ) -> DataFrame:
-    """Résout le poste et le nom d'équipe. État courant uniquement, pas d'historique (voir player_gameweek_stats)."""
+    """Résout le poste et le nom d'équipe. Inclut photo : identifiant utilisé pour
+    construire l'URL du portrait officiel du joueur."""
     element_type_mapping = F.create_map(
         *[F.lit(x) for pair in ELEMENT_TYPE_MAP.items() for x in pair]
     )
@@ -35,6 +39,7 @@ def transform_silver_players(
         F.col("web_name"),
         F.col("first_name"),
         F.col("second_name"),
+        F.col("photo"),
         F.col("team").alias("team_id"),
         element_type_mapping[F.col("element_type")].alias("position"),
         (F.col("now_cost").cast(DoubleType()) / 10).alias("cost_millions"),
@@ -46,7 +51,7 @@ def transform_silver_players(
     )
 
     return players.join(
-        silver_teams.select("team_id", "team_name"),
+        silver_teams.select("team_id", "team_name", "team_code"),
         on="team_id",
         how="left",
     )

@@ -90,7 +90,13 @@ print(
 )
 
 # COMMAND ----------
-
+current_gw = next((e for e in events if e["is_current"]), None) or next((e for e in events if e["is_next"]), None)
+spark.createDataFrame([{
+    "gameweek_id": current_gw["id"],
+    "name": current_gw["name"],
+    "deadline_time": current_gw["deadline_time"],
+    "finished": current_gw["finished"],
+}]).write.format("delta").mode("overwrite").saveAsTable(f"{CATALOG}.bronze.current_gameweek")
 # MAGIC %md
 # MAGIC ## Fixtures
 

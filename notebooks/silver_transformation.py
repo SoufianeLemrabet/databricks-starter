@@ -40,7 +40,7 @@ bronze_teams = spark.table(f"{CATALOG}.bronze.teams_snapshot")
 bronze_players = spark.table(f"{CATALOG}.bronze.players_snapshot")
 bronze_fixtures = spark.table(f"{CATALOG}.bronze.fixtures_snapshot")
 bronze_history = spark.table(f"{CATALOG}.bronze.player_gameweek_history")
-
+bronze_current_gameweek = spark.table(f"{CATALOG}.bronze.current_gameweek")
 # COMMAND ----------
 # MAGIC %md
 # MAGIC ## Transformations
@@ -52,7 +52,7 @@ silver_teams = transform_silver_teams(bronze_teams)
 silver_players = transform_silver_players(bronze_players, silver_teams)
 silver_fixtures = transform_silver_fixtures(bronze_fixtures, silver_teams)
 silver_stats = transform_silver_player_gameweek_stats(bronze_history, silver_players, silver_fixtures)
-
+silver_current_gameweek = bronze_current_gameweek
 # COMMAND ----------
 # MAGIC %md
 # MAGIC ## Contrôles de qualité
@@ -71,7 +71,7 @@ silver_teams.write.format("delta").mode("overwrite").saveAsTable(f"{CATALOG}.sil
 silver_players.write.format("delta").mode("overwrite").saveAsTable(f"{CATALOG}.silver.players")
 silver_fixtures.write.format("delta").mode("overwrite").saveAsTable(f"{CATALOG}.silver.fixtures")
 silver_stats.write.format("delta").mode("overwrite").saveAsTable(f"{CATALOG}.silver.player_gameweek_stats")
-
+silver_current_gameweek.write.format("delta").mode("overwrite").saveAsTable(f"{CATALOG}.silver.current_gameweek")
 logger.info("silver_run_completed")
 
 # COMMAND ----------

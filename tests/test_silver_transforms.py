@@ -17,6 +17,7 @@ def test_transform_silver_teams_selects_and_renames_columns(spark):
                 "name": "Arsenal",
                 "short_name": "ARS",
                 "strength": 4,
+                "code": 3,
                 "strength_overall_home": 1300,
                 "strength_overall_away": 1250,
                 "strength_attack_home": 1300,
@@ -38,6 +39,7 @@ def test_transform_silver_teams_selects_and_renames_columns(spark):
     assert row["short_name"] == "ARS"
     assert "played" not in result[0].asDict()
     assert "position" not in result[0].asDict()
+    assert result[0]["team_code"] == 3
 
 
 # --- transform_silver_players ---
@@ -52,6 +54,7 @@ def test_transform_silver_players_resolves_position_and_team_name(spark):
                 "first_name": "Mohamed",
                 "second_name": "Salah",
                 "team": 11,
+                "photo": "1282.jpg",
                 "element_type": 3,
                 "now_cost": 125,
                 "total_points": 80,
@@ -62,7 +65,9 @@ def test_transform_silver_players_resolves_position_and_team_name(spark):
             }
         ]
     )
-    silver_teams = spark.createDataFrame([{"team_id": 11, "team_name": "Liverpool"}])
+    silver_teams = spark.createDataFrame(
+        [{"team_id": 11, "team_name": "Liverpool", "team_code": 11}]
+    )
 
     result = transform_silver_players(bronze_players, silver_teams).collect()
 
@@ -83,6 +88,7 @@ def test_transform_silver_players_handles_all_positions(spark):
                 "second_name": "y",
                 "team": 1,
                 "element_type": i,
+                "photo": "29389328.jpg",
                 "now_cost": 50,
                 "total_points": 0,
                 "form": "0.0",
@@ -93,7 +99,9 @@ def test_transform_silver_players_handles_all_positions(spark):
             for i in range(1, 5)
         ]
     )
-    silver_teams = spark.createDataFrame([{"team_id": 1, "team_name": "Test FC"}])
+    silver_teams = spark.createDataFrame(
+        [{"team_id": 1, "team_name": "Test FC", "team_code": "2929"}]
+    )
 
     result = transform_silver_players(bronze_players, silver_teams).collect()
     positions = {row["player_id"]: row["position"] for row in result}
@@ -114,13 +122,16 @@ def test_transform_silver_players_left_join_keeps_player_without_matching_team(s
                 "now_cost": 40,
                 "total_points": 0,
                 "form": "0.0",
+                "photo": "18181.jpg",
                 "selected_by_percent": "0.0",
                 "status": "a",
                 "chance_of_playing_next_round": 100,
             }
         ]
     )
-    silver_teams = spark.createDataFrame([{"team_id": 1, "team_name": "Test FC"}])
+    silver_teams = spark.createDataFrame(
+        [{"team_id": 1, "team_name": "Test FC", "team_code": "3838"}]
+    )
 
     result = transform_silver_players(bronze_players, silver_teams).collect()
 
@@ -180,6 +191,7 @@ def test_transform_silver_player_gameweek_stats_double_gameweek_keeps_both_rows(
                 "minutes": 90,
                 "goals_scored": 1,
                 "assists": 0,
+                "code": 3,
                 "clean_sheets": 0,
                 "goals_conceded": 1,
                 "yellow_cards": 0,
@@ -201,6 +213,7 @@ def test_transform_silver_player_gameweek_stats_double_gameweek_keeps_both_rows(
                 "goals_scored": 0,
                 "assists": 0,
                 "clean_sheets": 0,
+                "code": 3,
                 "goals_conceded": 2,
                 "yellow_cards": 1,
                 "red_cards": 0,
@@ -244,6 +257,7 @@ def test_transform_silver_player_gameweek_stats_difficulty_depends_on_was_home(s
                 "minutes": 90,
                 "goals_scored": 0,
                 "assists": 1,
+                "code": 3,
                 "clean_sheets": 1,
                 "goals_conceded": 0,
                 "yellow_cards": 0,
@@ -283,6 +297,7 @@ def test_transform_silver_player_gameweek_stats_expected_goals_cast_to_double(sp
                 "total_points": 5,
                 "minutes": 90,
                 "goals_scored": 0,
+                "code": 3,
                 "assists": 0,
                 "clean_sheets": 0,
                 "goals_conceded": 0,
