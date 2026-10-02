@@ -59,6 +59,9 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
+st.write("### Test de chargement d'image externe")
+st.image("https://resources.premierleague.com/premierleague/badges/50/t1.png", width=50)
+
 
 @st.cache_resource
 def get_connection():
