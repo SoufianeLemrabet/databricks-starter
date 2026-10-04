@@ -25,6 +25,8 @@ class PlayerCandidate:
     team_id: int
     cost_millions: float
     recommendation_score: float
+    photo: str = ""
+    team_code: int = 0
 
 
 def optimize_squad(
